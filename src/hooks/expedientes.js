@@ -1,0 +1,213 @@
+import { useCallback, useEffect, useState } from 'react'
+import { expedientesApi } from '@/api/expedientes'
+import { documentosApi } from '@/api/documentos'
+import { ROL_REGEX } from '@/lib/constantes'
+
+export function useExpediente(rol) {
+  const [estado, setEstado] = useState({ cargando: !!rol, expediente: null, error: null })
+  const [recarga, setRecarga] = useState(0)
+
+  const [rolActual, setRolActual] = useState(rol)
+  if (rol !== rolActual) {
+    setRolActual(rol)
+    setEstado({ cargando: !!rol, expediente: null, error: null })
+  }
+
+  useEffect(() => {
+    if (!rol) return
+    let vigente = true
+
+    expedientesApi
+      .getById(rol)
+      .then((data) => {
+        if (vigente) setEstado({ cargando: false, expediente: data ?? null, error: null })
+      })
+      .catch((err) => {
+        if (vigente)
+          setEstado({
+            cargando: false,
+            expediente: null,
+            error: err?.error ?? err?.message ?? 'No se pudo cargar la causa',
+          })
+      })
+
+    return () => {
+      vigente = false
+    }
+  }, [rol, recarga])
+
+  const refetch = useCallback(() => setRecarga((n) => n + 1), [])
+
+  return {
+    expediente: estado.expediente,
+    loading: estado.cargando,
+    error: estado.error,
+    refetch,
+  }
+}
+
+const MAX_MB = 25
+const TIPOS_OK = ['application/pdf']
+
+export function useSubirArchivo() {
+  const [subiendo, setSubiendo] = useState(false)
+  const [error, setError] = useState(null)
+
+  const validarArchivo = useCallback((archivo) => {
+    if (!archivo) return null
+    if (!TIPOS_OK.includes(archivo.type)) return 'Solo se permiten archivos PDF.'
+    if (archivo.size > MAX_MB * 1024 * 1024) return `El archivo supera el máximo de ${MAX_MB} MB.`
+    return null
+  }, [])
+
+  const agregarDocumento = useCallback(
+    async (expedienteId, datos, archivo) => {
+      const invalido = validarArchivo(archivo)
+      if (invalido) {
+        setError(invalido)
+        return null
+      }
+      setSubiendo(true)
+      setError(null)
+      try {
+        return await expedientesApi.agregarDocumento(expedienteId, datos, archivo)
+      } catch (err) {
+        setError(err?.error ?? err?.message ?? 'No se pudo agregar el documento.')
+        return null
+      } finally {
+        setSubiendo(false)
+      }
+    },
+    [validarArchivo]
+  )
+
+  return { agregarDocumento, validarArchivo, subiendo, error }
+}
+
+export function useBusquedaPublica() {
+  const [rol, setRol] = useState('')
+  const [buscando, setBuscando] = useState(false)
+  const [error, setError] = useState(null)
+  const [sinResultado, setSinResultado] = useState(false)
+
+  const limpiarAvisos = () => {
+    setError(null)
+    setSinResultado(false)
+  }
+
+  const escribir = (e) => {
+    setRol(e.target.value)
+    limpiarAvisos()
+  }
+
+  const buscar = async (e) => {
+    e.preventDefault()
+    const limpio = rol.trim()
+    if (!ROL_REGEX.test(limpio)) {
+      setError('Ingresa el ROL incluyendo el guion. Ej: 1234-2026')
+      return null
+    }
+    setBuscando(true)
+    limpiarAvisos()
+    try {
+      const data = await expedientesApi.consultaPublica(limpio)
+      if (data.length > 0) return data[0]
+      setSinResultado(true)
+      return null
+    } catch {
+      setError('No se pudo realizar la consulta. Intenta nuevamente.')
+      return null
+    } finally {
+      setBuscando(false)
+    }
+  }
+
+  return { rol, buscando, error, sinResultado, escribir, buscar }
+}
+
+export function useUnificarPdf() {
+  const [generando, setGenerando] = useState(false)
+  const [progreso, setProgreso] = useState(null)
+  const [error, setError] = useState(null)
+
+  const unificar = useCallback(async (expediente) => {
+    const documentos = expediente?.documentos ?? []
+    if (documentos.length === 0) return
+    setGenerando(true)
+    setProgreso({ actual: 0, total: documentos.length })
+    setError(null)
+    try {
+      const { PDFDocument } = await import('pdf-lib')
+      const combinado = await PDFDocument.create()
+
+      for (const [i, doc] of documentos.entries()) {
+        setProgreso({ actual: i + 1, total: documentos.length })
+        const bytes = await documentosApi.bytes(doc.uid)
+        const pdf = await PDFDocument.load(bytes)
+        const paginas = await combinado.copyPages(pdf, pdf.getPageIndices())
+        paginas.forEach((p) => combinado.addPage(p))
+      }
+
+      const salida = await combinado.save()
+      const blob = new Blob([salida], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = url
+      enlace.download = `Causa ${expediente.rol}.pdf`
+      enlace.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError(err?.message ?? 'No se pudo unificar el expediente.')
+    } finally {
+      setGenerando(false)
+      setProgreso(null)
+    }
+  }, [])
+
+  return { unificar, generando, progreso, error }
+}
+
+export function useRecientes() {
+  const [estado, setEstado] = useState({ cargando: true, recientes: [], error: null })
+
+  useEffect(() => {
+    let vigente = true
+
+    expedientesApi
+      .recientes()
+      .then((data) => {
+        if (vigente) setEstado({ cargando: false, recientes: data ?? [], error: null })
+      })
+      .catch(() => {
+        if (vigente)
+          setEstado({ cargando: false, recientes: [], error: 'No se pudieron cargar las causas recientes.' })
+      })
+
+    return () => {
+      vigente = false
+    }
+  }, [])
+
+  return estado
+}
+
+export function useEliminarDocumento() {
+  const [eliminando, setEliminando] = useState(false)
+  const [error, setError] = useState(null)
+
+  const eliminar = useCallback(async (uid) => {
+    setEliminando(true)
+    setError(null)
+    try {
+      await expedientesApi.eliminarDocumento(uid)
+      return true
+    } catch (err) {
+      setError(err?.error ?? err?.message ?? 'No se pudo eliminar el documento.')
+      return false
+    } finally {
+      setEliminando(false)
+    }
+  }, [])
+
+  return { eliminar, eliminando, error }
+}
