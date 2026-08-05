@@ -22,8 +22,6 @@ export default function ExpedienteDetalle() {
   if (error) return <PantallaMensaje texto={error} tono="error" />
   if (!expediente) return <PantallaMensaje texto="Causa no encontrada." />
 
-  // Ordenados por fecha de ingreso (más antiguo -> más reciente).
-  // El folio se deriva de este orden: el primero en ingresar es el folio 1.
   const documentos = [...(expediente.documentos ?? [])].sort(
     (a, b) => new Date(a.creadoEn) - new Date(b.creadoEn)
   )
@@ -96,9 +94,9 @@ export default function ExpedienteDetalle() {
                 </span>
               </div>
 
-              <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-slate-900/[0.02]">
-                <div className="hidden grid-cols-[4rem_1fr_11rem_3rem] items-center gap-4 border-b border-slate-200 bg-slate-50 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 md:grid">
-                  <span>Folio</span>
+              <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="hidden grid-cols-[3.5rem_1fr_11rem_2.5rem] items-center gap-4 border-b border-slate-200 bg-slate-50/70 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 md:grid">
+                  <span className="text-center">Folio</span>
                   <span>Documento</span>
                   <span>Fecha de ingreso</span>
                   <span className="sr-only">Abrir</span>
@@ -136,27 +134,27 @@ function FilaDocumento({ documento, folio, onAbrir }) {
       <button
         type="button"
         onClick={onAbrir}
-        className="grid w-full cursor-pointer grid-cols-[3rem_1fr_auto] items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-blue-50/50 md:grid-cols-[4rem_1fr_11rem_3rem] md:px-5"
+        className="grid w-full cursor-pointer grid-cols-[3rem_1fr_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 md:grid-cols-[3.5rem_1fr_11rem_2.5rem] md:px-5"
       >
-        <span className="absolute inset-y-0 left-0 w-0.5 bg-blue-600 opacity-0 transition-opacity group-hover:opacity-100" />
-
-        <span className="font-mono text-sm font-semibold tabular-nums text-slate-400 transition-colors group-hover:text-blue-600">
-          {String(folio).padStart(2, '0')}
+        <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-blue-600 opacity-0 transition-opacity group-hover:opacity-100" />
+        <span className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-full bg-slate-100 px-2 font-mono text-sm font-semibold tabular-nums text-slate-500 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+          {folio}
         </span>
-
         <span className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-blue-100 group-hover:text-blue-600">
-            <FileText size={17} />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-slate-200">
+            <FileText size={18} />
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[15px] font-semibold text-slate-900">{documento.nombre}</span>
-            <span className="block truncate text-xs text-slate-400">{documento.nombreArchivo}</span>
+            <span className="mt-0.5 block text-xs text-slate-400 md:hidden">{formatearFecha(documento.creadoEn)}</span>
           </span>
         </span>
-
-        <span className="hidden text-sm text-slate-500 md:block">{formatearFecha(documento.creadoEn)}</span>
-
-        <span className="hidden justify-self-end text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-blue-600 md:block">
+        <span className="hidden md:block">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-200/80">
+            {formatearFecha(documento.creadoEn)}
+          </span>
+        </span>
+        <span className="hidden justify-self-end text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-blue-600 md:block">
           <ChevronRight size={18} />
         </span>
       </button>

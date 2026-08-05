@@ -6,7 +6,7 @@ import Boton from '@/components/Boton'
 import ModalNuevoExpediente from '@/components/ModalNuevoExpediente'
 import { useBusquedaPublica, useRecientes } from '@/hooks/expedientes'
 import { useClickAfuera } from '@/hooks/ui'
-import { nombreDepartamento, ROL_REGEX } from '@/lib/constantes'
+import { ROL_REGEX } from '@/lib/constantes'
 import { RUTAS } from '@/lib/rutas'
 import { useSesion } from '@/lib/sesion'
 import logo from "../assets/logo-chillan-letras.png";
@@ -58,7 +58,7 @@ export default function Inicio() {
           {busqueda.sinResultado && (
             <SinResultado
               rol={rolEscrito}
-              departamentoId={usuario.departamentoId}
+              departamento={usuario.departamentoNombre}
               puedeRegistrar={permisos.digitalizar}
               onRegistrar={() => setModalNuevo(true)}
             />
@@ -161,14 +161,14 @@ function FondoDecorativo() {
   )
 }
 
-function SinResultado({ rol, departamentoId, puedeRegistrar, onRegistrar }) {
+function SinResultado({ rol, departamento, puedeRegistrar, onRegistrar }) {
   return (
     <div className="animate-aparecer mt-8 flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-md">
       <span className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
         <FileSearch size={26} className="text-slate-400" />
       </span>
       <div>
-        <p className="font-medium text-slate-800">No se encontró el ROL {rol} en {nombreDepartamento(departamentoId)}.</p>
+        <p className="font-medium text-slate-800">No se encontró el ROL {rol}{departamento ? ` en ${departamento}` : ''}.</p>
         <p className="mt-1 text-sm text-slate-500">Verifica que esté escrito correctamente.</p>
       </div>
       {puedeRegistrar && (

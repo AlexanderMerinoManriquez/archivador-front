@@ -1,4 +1,4 @@
-const ROL_FUNCIONARIO = 'funcionario'
+const ROL_FALLBACK = 'funcionario'
 
 export function normalizarUsuario(funcionario = {}, me = {}) {
   const nombre = [funcionario.nombre ?? me.nombre, funcionario.apellido ?? me.apellido]
@@ -9,7 +9,8 @@ export function normalizarUsuario(funcionario = {}, me = {}) {
   return {
     rut: funcionario.rut ?? me.rut,
     nombre: nombre || (funcionario.rut ?? me.rut),
-    rol: ROL_FUNCIONARIO,
+    rol: me.rol ?? funcionario.rol ?? ROL_FALLBACK,
+    permisos: me.permisos ?? funcionario.permisos ?? null,
     departamentoId: funcionario.departamento_id ?? me.departamento_id ?? null,
     departamentoNombre: me.departamento_nombre ?? null,
     departamentoCodigo: me.departamento_codigo ?? null,

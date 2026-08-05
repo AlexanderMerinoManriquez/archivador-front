@@ -131,7 +131,9 @@ export function useUnificarPdf() {
   const [error, setError] = useState(null)
 
   const unificar = useCallback(async (expediente) => {
-    const documentos = expediente?.documentos ?? []
+    const documentos = [...(expediente?.documentos ?? [])].sort(
+      (a, b) => new Date(a.creadoEn) - new Date(b.creadoEn)
+    )
     if (documentos.length === 0) return
     setGenerando(true)
     setProgreso({ actual: 0, total: documentos.length })
