@@ -1,10 +1,9 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/auth'
 import { RUTAS } from '@/lib/rutas'
 
 export default function RutaProtegida() {
   const { autenticado, cargando } = useAuth()
-  const location = useLocation()
 
   if (cargando) {
     return (
@@ -15,7 +14,7 @@ export default function RutaProtegida() {
   }
 
   if (!autenticado) {
-    return <Navigate to={RUTAS.login} replace state={{ desde: location.pathname }} />
+    return <Navigate to={RUTAS.login} replace />
   }
 
   return <Outlet />

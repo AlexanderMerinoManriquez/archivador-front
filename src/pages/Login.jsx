@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowRight, LockKeyhole, ShieldCheck } from 'lucide-react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/auth'
 import { CAMPO } from '@/lib/constantes'
 import { formatearRut, validarRut } from '@/lib/rut'
@@ -10,7 +10,6 @@ import logo from "../assets/logo-chillan-letras.png";
 export default function Login() {
   const { autenticado, login } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
 
   const [rut, setRut] = useState('')
   const [clave, setClave] = useState('')
@@ -18,8 +17,7 @@ export default function Login() {
   const [error, setError] = useState(null)
 
   if (autenticado) {
-    const destino = location.state?.desde ?? RUTAS.inicio
-    return <Navigate to={destino} replace />
+    return <Navigate to={RUTAS.inicio} replace />
   }
 
   const onRutChange = (e) => {
@@ -43,8 +41,7 @@ export default function Login() {
     setError(null)
     try {
       await login({ rut, clave })
-      const destino = location.state?.desde ?? RUTAS.inicio
-      navigate(destino, { replace: true })
+      navigate(RUTAS.inicio, { replace: true })
     } catch (err) {
       setError(err.message ?? 'RUT o clave incorrectos.')
     } finally {
