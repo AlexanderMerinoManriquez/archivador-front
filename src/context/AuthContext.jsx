@@ -36,9 +36,21 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(USUARIO_KEY)
     setUsuario(null)
   }, [])
+  
+  const refrescarUsuario = useCallback(async () => {
+    try {
+      const datos = await authApi.yo()
+      setUsuario((prev) => {
+        const actualizado = { ...(prev ?? {}), ...datos }
+        localStorage.setItem(USUARIO_KEY, JSON.stringify(actualizado))
+        return actualizado
+      })
+    } catch {
+    }
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ usuario, autenticado: !!usuario, cargando: false, login, logout }}>
+    <AuthContext.Provider value={{ usuario, autenticado: !!usuario, cargando: false, login, logout, refrescarUsuario }}>
       {children}
     </AuthContext.Provider>
   )

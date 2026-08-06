@@ -14,6 +14,8 @@ export function normalizarUsuario(funcionario = {}, me = {}) {
     departamentoId: funcionario.departamento_id ?? me.departamento_id ?? null,
     departamentoNombre: me.departamento_nombre ?? null,
     departamentoCodigo: me.departamento_codigo ?? null,
+    causasCreadas: me.total_expedientes ?? null,
+    documentosSubidos: me.total_documentos ?? null,
   }
 }
 

@@ -33,7 +33,7 @@ export default function ModalNuevoExpediente({ abierto, departamentoFijo = '', r
       const exp = await expedientesApi.crear({ ...form, rol })
       onCreado(exp)
     } catch (err) {
-      setError(err.message ?? 'No se pudo crear el expediente.')
+      setError(err?.error ?? err?.message ?? 'No se pudo crear la causa.')
     } finally {
       setGuardando(false)
     }

@@ -11,6 +11,7 @@ import BotonDescargarExpediente from '@/components/BotonDescargarExpediente'
 
 const VisorArchivo = lazy(() => import('@/components/VisorArchivo'))
 import { useEliminarDocumento, useExpediente } from '@/hooks/expedientes'
+import { useAuth } from '@/hooks/auth'
 import { RUTAS } from '@/lib/rutas'
 import { useSesion } from '@/lib/sesion'
 
@@ -20,6 +21,7 @@ export default function DocumentoDetalle() {
   const { rol, uid } = useParams()
   const navigate = useNavigate()
   const { expediente, loading, error, refetch } = useExpediente(rol)
+  const { refrescarUsuario } = useAuth()
   const { usuario, permisos } = useSesion()
   const [modalDocumento, setModalDocumento] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
@@ -42,6 +44,7 @@ export default function DocumentoDetalle() {
   const trasCambio = () => {
     setModalDocumento(false)
     refetch()
+    refrescarUsuario()
   }
 
   return (
@@ -125,7 +128,7 @@ export default function DocumentoDetalle() {
         <ModalEliminarDocumento
           documento={documento}
           onCerrar={() => setModalEliminar(false)}
-          onEliminado={() => navigate(RUTAS.expediente(expediente.rol))}
+          onEliminado={() => { refrescarUsuario(); navigate(RUTAS.expediente(expediente.rol)) }}
         />
       )}
     </div>

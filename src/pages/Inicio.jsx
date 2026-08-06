@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ArrowRight, ChevronDown, ChevronRight, FileSearch, FolderOpen, History, Plus, Search } from 'lucide-react'
+import { useAuth } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
 import BarraSesion from '@/components/BarraSesion'
 import Boton from '@/components/Boton'
@@ -13,6 +14,7 @@ import logo from "../assets/logo-chillan-letras.png";
 
 export default function Inicio() {
   const navigate = useNavigate()
+  const { refrescarUsuario } = useAuth()
   const { usuario, permisos } = useSesion()
   const [modalNuevo, setModalNuevo] = useState(false)
   const busqueda = useBusquedaPublica()
@@ -76,7 +78,7 @@ export default function Inicio() {
           departamentoFijo={usuario?.departamentoId ?? busqueda.departamentoId}
           rolInicial={ROL_REGEX.test(rolEscrito) ? rolEscrito : ''}
           onCerrar={() => setModalNuevo(false)}
-          onCreado={(exp) => navigate(RUTAS.expediente(exp.rol))}
+          onCreado={(exp) => { refrescarUsuario(); navigate(RUTAS.expediente(exp.rol)) }}
         />
       )}
     </div>

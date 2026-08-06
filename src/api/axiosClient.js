@@ -17,7 +17,8 @@ axiosClient.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('usuario')
-      if (location.pathname !== '/login') location.href = '/login'
+      const loginUrl = `${import.meta.env.BASE_URL}login`.replace('//', '/')
+      if (!location.pathname.endsWith('/login')) location.href = loginUrl
     }
     return Promise.reject(error.response?.data ?? { message: 'Error de conexión' })
   }

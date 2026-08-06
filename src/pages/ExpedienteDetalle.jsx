@@ -7,6 +7,7 @@ import Boton from '@/components/Boton'
 import ModalNuevoDocumento from '@/components/ModalNuevoDocumento'
 import BotonDescargarExpediente from '@/components/BotonDescargarExpediente'
 import { useExpediente } from '@/hooks/expedientes'
+import { useAuth } from '@/hooks/auth'
 import { formatearFecha } from '@/lib/expedientes'
 import { RUTAS } from '@/lib/rutas'
 import { useSesion } from '@/lib/sesion'
@@ -15,6 +16,7 @@ export default function ExpedienteDetalle() {
   const { rol } = useParams()
   const navigate = useNavigate()
   const { expediente, loading, error, refetch } = useExpediente(rol)
+  const { refrescarUsuario } = useAuth()
   const { usuario, permisos } = useSesion()
   const [modalDocumento, setModalDocumento] = useState(false)
 
@@ -29,6 +31,7 @@ export default function ExpedienteDetalle() {
   const trasCambio = () => {
     setModalDocumento(false)
     refetch()
+    refrescarUsuario()
   }
 
   return (
