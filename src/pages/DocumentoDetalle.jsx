@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, FileText, Plus, Trash2 } from 'lucide-react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import Boton from '@/components/Boton'
@@ -8,7 +8,8 @@ import ListaDocumentos from '@/components/ListaDocumentos'
 import Modal from '@/components/Modal'
 import ModalNuevoDocumento from '@/components/ModalNuevoDocumento'
 import BotonDescargarExpediente from '@/components/BotonDescargarExpediente'
-import VisorArchivo from '@/components/VisorArchivo'
+
+const VisorArchivo = lazy(() => import('@/components/VisorArchivo'))
 import { useEliminarDocumento, useExpediente } from '@/hooks/expedientes'
 import { RUTAS } from '@/lib/rutas'
 import { useSesion } from '@/lib/sesion'
@@ -106,7 +107,15 @@ export default function DocumentoDetalle() {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <VisorArchivo documento={documento} alto="h-[70vh] lg:h-[calc(100vh-14rem)]" />
+          <Suspense
+            fallback={
+              <div className="flex h-[70vh] items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-md lg:h-[calc(100vh-14rem)]">
+                <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+              </div>
+            }
+          >
+            <VisorArchivo documento={documento} alto="h-[70vh] lg:h-[calc(100vh-14rem)]" />
+          </Suspense>
         </div>
       </div>
 
