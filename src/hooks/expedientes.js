@@ -178,7 +178,13 @@ export function useRecientes() {
     expedientesApi
       .recientes()
       .then((data) => {
-        if (vigente) setEstado({ cargando: false, recientes: data ?? [], error: null })
+        if (!vigente) return
+        const ordenados = [...(data ?? [])].sort((a, b) => {
+          const fechaA = ultimaActividad(a)
+          const fechaB = ultimaActividad(b)
+          return fechaB - fechaA
+        })
+        setEstado({ cargando: false, recientes: ordenados, error: null })
       })
       .catch(() => {
         if (vigente)
@@ -191,6 +197,15 @@ export function useRecientes() {
   }, [])
 
   return estado
+}
+
+function ultimaActividad(expediente) {
+  const fechas = [
+    expediente.creadoEn,
+    ...(expediente.documentos ?? []).map((d) => d.creadoEn),
+  ].filter(Boolean).map((f) => new Date(f).getTime())
+
+  return fechas.length > 0 ? Math.max(...fechas) : 0
 }
 
 export function useEliminarDocumento() {

@@ -14,3 +14,54 @@
     }
   }
 }
+
+.btn-cu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  user-select: none;
+  border: 0;
+}
+.btn-cu:hover { text-decoration: none; cursor: pointer; }
+.btn-cu:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.btn-cu .cl-claveunica {
+  text-indent: -9999px;
+  background: url(/claveunica/cu-blanco.svg) no-repeat center / contain;
+  display: inline-block;
+}
+
+.btn-cu .text {
+  padding-left: 4px;
+  font-size: 1rem;
+  text-rendering: geometricPrecision;
+}
+
+.btn-cu.btn-color-estandar { background-color: #0f69c4; color: #fff; }
+.btn-cu.btn-color-estandar:hover  { background-color: #0b4e91; }
+.btn-cu.btn-color-estandar:active { background-color: #07305a; }
+.btn-cu.btn-color-estandar:focus {
+  background-color: #0b4e91;
+  outline: 4px solid #ffbe5c;
+  outline-offset: 0;
+}
+
+.btn-cu.btn-m {
+  width: fit-content;
+  min-height: 48px;
+  padding: 8px 14px !important;
+  font-size: 16px;
+  line-height: 2rem;
+}
+.btn-cu.btn-m .cl-claveunica {
+  width: 24px;
+  height: 24px;
+  margin: auto 4px auto 0;
+}
+
+.btn-cu.rounded-full { border-radius: 99px; }

@@ -40,20 +40,17 @@ export default function Login() {
 
           <h1 className="mt-8 text-2xl font-bold text-slate-900">Archivador Digital</h1>
           <p className="mt-1.5 text-sm text-slate-500">Iniciar sesión con mi ClaveÚnica</p>
+
           <button
             onClick={iniciarSesion}
             type="button"
             disabled={enviando}
-            className={[
-              'mt-8 inline-flex items-center justify-center gap-2 rounded-full font-bold text-white',
-              'px-6 py-2.5 text-base leading-8 transition-colors',
-              'bg-[#0f69c4] hover:bg-[#0b4e91] active:bg-[#07305a]',
-              'focus:outline-none focus:ring-4 focus:ring-[#ffbe5c]',
-              enviando ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
-            ].join(' ')}
+            className={`btn-cu btn-m btn-color-estandar rounded-full mt-8 ${
+              enviando ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
-            <span aria-hidden className="font-black tracking-tight">CU</span>
-            <span>{enviando ? 'Dirigiendo…' : 'Iniciar sesión'}</span>
+            <span className="cl-claveunica" aria-hidden="true" />
+            <span className="text">{enviando ? 'Dirigiendo…' : 'Iniciar sesión'}</span>
           </button>
 
           {error && (
@@ -61,10 +58,6 @@ export default function Login() {
           )}
         </div>
       </div>
-
-      <p className="relative z-10 mt-6 text-xs text-slate-400">
-        Juzgado de Policía Local · Municipalidad de Chillán
-      </p>
     </div>
   )
 }
