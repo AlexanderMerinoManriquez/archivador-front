@@ -35,7 +35,7 @@ export default function ModalNuevoDocumento({ abierto, expedienteId, onCerrar, o
         <SelectorArchivo archivo={archivo} onSeleccionar={setArchivo} error={errorArchivo} />
 
         <label className="mt-4 block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-700">Nombre del documento <span className="text-red-500">*</span></span>
+          <span className="mb-1.5 block text-sm font-medium text-slate-700">Descripción del documento <span className="text-red-500">*</span></span>
           <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Parte denuncia Carabineros" className={CAMPO} />
         </label>
 

@@ -200,14 +200,23 @@ export function useRecientes() {
 }
 
 function ultimaActividad(expediente) {
-  const fechas = [
-    expediente.creadoEn,
-    ...(expediente.documentos ?? []).map((d) => d.creadoEn),
-  ].filter(Boolean).map((f) => new Date(f).getTime())
+  const fechas = [expediente.creadoEn]
 
-  return fechas.length > 0 ? Math.max(...fechas) : 0
+  if (expediente.actualizadoEn) {
+    fechas.push(expediente.actualizadoEn)
+  }
+
+  if (expediente.documentos && Array.isArray(expediente.documentos)) {
+    expediente.documentos.forEach((d) => fechas.push(d.creadoEn))
+  }
+
+  const timestamps = fechas
+    .filter(Boolean)
+    .map((f) => new Date(f).getTime())
+    .filter((t) => !isNaN(t))
+
+  return timestamps.length > 0 ? Math.max(...timestamps) : 0
 }
-
 export function useEliminarDocumento() {
   const [eliminando, setEliminando] = useState(false)
   const [error, setError] = useState(null)

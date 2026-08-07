@@ -98,23 +98,33 @@ export default function ExpedienteDetalle() {
               </div>
 
               <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="hidden grid-cols-[3.5rem_1fr_11rem_2.5rem] items-center gap-4 border-b border-slate-200 bg-slate-50/70 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 md:grid">
-                  <span className="text-center">Folio</span>
-                  <span>Documento</span>
-                  <span>Fecha de ingreso</span>
-                  <span className="sr-only">Abrir</span>
+                
+                {/* Encabezado de la tabla modificado con líneas verticales (divide-x) */}
+                <div className="hidden grid-cols-[4rem_1fr_12rem_3rem] items-stretch border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400 divide-x divide-slate-200 md:grid">
+                  <div className="flex items-center justify-center px-4 py-3">
+                    <span className="text-sm">N°</span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span>Documento</span>
+                  </div>
+                  <div className="flex items-center px-4 py-3">
+                    <span>Fecha de ingreso</span>
+                  </div>
+                  <div className="flex items-center justify-center px-4 py-3">
+                    <span className="sr-only">Abrir</span>
+                  </div>
                 </div>
 
-                <ul className="divide-y divide-slate-100">
-    
+                {/* Cuerpo de la tabla */}
+                <ul className="divide-y divide-slate-200">
                   {documentos
-                    .map((doc, i) => ({ doc, folio: i + 1 }))
+                    .map((doc, i) => ({ doc, numero: i + 1 }))
                     .reverse()
-                    .map(({ doc, folio }) => (
+                    .map(({ doc, numero }) => (
                       <FilaDocumento
                         key={doc.uid}
                         documento={doc}
-                        folio={folio}
+                        numero={numero}
                         onAbrir={() => navigate(RUTAS.documento(expediente.rol, doc.uid))}
                       />
                     ))}
@@ -126,24 +136,30 @@ export default function ExpedienteDetalle() {
       </main>
 
       <ModalNuevoDocumento abierto={modalDocumento} expedienteId={expediente.id} onCerrar={() => setModalDocumento(false)} onListo={trasCambio} />
-
     </div>
   )
 }
 
-function FilaDocumento({ documento, folio, onAbrir }) {
+function FilaDocumento({ documento, numero, onAbrir }) {
   return (
     <li className="group relative">
+      {/* Botón de fila modificado para tener división de bordes en escritorio (md:divide-x) */}
       <button
         type="button"
         onClick={onAbrir}
-        className="grid w-full cursor-pointer grid-cols-[3rem_1fr_auto] items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 md:grid-cols-[3.5rem_1fr_11rem_2.5rem] md:px-5"
+        className="grid w-full cursor-pointer grid-cols-[3rem_1fr_auto] items-stretch text-left transition-colors hover:bg-slate-50 md:grid-cols-[4rem_1fr_12rem_3rem] md:divide-x md:divide-slate-200"
       >
         <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-blue-600 opacity-0 transition-opacity group-hover:opacity-100" />
-        <span className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-full bg-slate-100 px-2 font-mono text-sm font-semibold tabular-nums text-slate-500 transition-colors group-hover:bg-blue-600 group-hover:text-white">
-          {folio}
+        
+        {/* Celda: Número */}
+        <span className="flex items-center justify-center px-4 py-3.5">
+          <span className="mx-auto flex h-8 min-w-8 items-center justify-center rounded-full bg-slate-100 px-2 font-mono text-sm font-semibold tabular-nums text-slate-500 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+            {numero}
+          </span>
         </span>
-        <span className="flex min-w-0 items-center gap-3">
+        
+        {/* Celda: Nombre Documento */}
+        <span className="flex min-w-0 items-center gap-3 px-4 py-3.5">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-slate-200">
             <FileText size={18} />
           </span>
@@ -152,12 +168,16 @@ function FilaDocumento({ documento, folio, onAbrir }) {
             <span className="mt-0.5 block text-xs text-slate-400 md:hidden">{formatearFecha(documento.creadoEn)}</span>
           </span>
         </span>
-        <span className="hidden md:block">
+        
+        {/* Celda: Fecha (Sólo Desktop) */}
+        <span className="hidden items-center px-4 py-3.5 md:flex">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-200/80">
             {formatearFecha(documento.creadoEn)}
           </span>
         </span>
-        <span className="hidden justify-self-end text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-blue-600 md:block">
+        
+        {/* Celda: Acción/Icono (Sólo Desktop) */}
+        <span className="hidden items-center justify-center px-4 py-3.5 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-blue-600 md:flex">
           <ChevronRight size={18} />
         </span>
       </button>
