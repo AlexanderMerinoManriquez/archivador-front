@@ -2,7 +2,6 @@ import { lazy, Suspense, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, FileText, Plus, Trash2 } from 'lucide-react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import Boton from '@/components/Boton'
-import Encabezado from '@/components/Encabezado'
 import PantallaMensaje from '@/components/PantallaMensaje'
 import ListaDocumentos from '@/components/ListaDocumentos'
 import Modal from '@/components/Modal'
@@ -22,7 +21,7 @@ export default function DocumentoDetalle() {
   const navigate = useNavigate()
   const { expediente, loading, error, refetch } = useExpediente(rol)
   const { refrescarUsuario } = useAuth()
-  const { usuario, permisos } = useSesion()
+  const { permisos } = useSesion()
   const [modalDocumento, setModalDocumento] = useState(false)
   const [modalEliminar, setModalEliminar] = useState(false)
 
@@ -48,10 +47,8 @@ export default function DocumentoDetalle() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <Encabezado usuario={usuario} />
-
-      <div className="shrink-0 border-b border-slate-200 bg-slate-50">
+    <div className="flex min-h-screen flex-col">
+      <div className="shrink-0 border-b border-slate-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 lg:px-6">
           <Link to={RUTAS.expediente(expediente.rol)} className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800">
             <ArrowLeft size={16} />
@@ -88,7 +85,7 @@ export default function DocumentoDetalle() {
 
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-5 lg:p-6">
         <aside className="hidden lg:block lg:w-72 lg:shrink-0">
-          <section className="flex max-h-[calc(100vh-14rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <section className="flex max-h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">
               <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                 Documentos
@@ -112,12 +109,12 @@ export default function DocumentoDetalle() {
         <div className="flex min-w-0 flex-1 flex-col">
           <Suspense
             fallback={
-              <div className="flex h-[70vh] items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-md lg:h-[calc(100vh-14rem)]">
+              <div className="flex h-[70vh] items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-md lg:h-[calc(100vh-8rem)]">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
               </div>
             }
           >
-            <VisorArchivo documento={documento} alto="h-[70vh] lg:h-[calc(100vh-14rem)]" />
+            <VisorArchivo documento={documento} alto="h-[70vh] lg:h-[calc(100vh-8rem)]" />
           </Suspense>
         </div>
       </div>

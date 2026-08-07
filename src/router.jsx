@@ -1,12 +1,16 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import RutaProtegida from '@/components/RutaProtegida'
+import Layout from '@/components/Layout'
 import { RUTAS } from '@/lib/rutas'
 
 const Inicio = lazy(() => import('@/pages/Inicio'))
+const Buscar = lazy(() => import('@/pages/Buscar'))
+const Recientes = lazy(() => import('@/pages/Recientes'))
 const Login = lazy(() => import('@/pages/Login'))
 const ExpedienteDetalle = lazy(() => import('@/pages/ExpedienteDetalle'))
 const DocumentoDetalle = lazy(() => import('@/pages/DocumentoDetalle'))
+const Estadisticas = lazy(() => import('@/pages/Estadisticas'))
 
 function Cargando() {
   return (
@@ -28,9 +32,17 @@ export const router = createBrowserRouter(
     {
       element: <RutaProtegida />,
       children: [
-        { path: RUTAS.inicio, element: conSuspense(Inicio) },
-        { path: RUTAS.expedientePatron, element: conSuspense(ExpedienteDetalle) },
-        { path: RUTAS.documentoPatron, element: conSuspense(DocumentoDetalle) },
+        {
+          element: <Layout />,
+          children: [
+            { path: RUTAS.inicio, element: conSuspense(Inicio) },
+            { path: RUTAS.buscar, element: conSuspense(Buscar) },
+            { path: RUTAS.recientes, element: conSuspense(Recientes) },
+            { path: RUTAS.estadisticas, element: conSuspense(Estadisticas) },
+            { path: RUTAS.expedientePatron, element: conSuspense(ExpedienteDetalle) },
+            { path: RUTAS.documentoPatron, element: conSuspense(DocumentoDetalle) },
+          ],
+        },
       ],
     },
     { path: '*', element: <Navigate to={RUTAS.inicio} replace /> },

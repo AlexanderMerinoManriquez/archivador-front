@@ -1,105 +1,177 @@
-import { ChartColumn } from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { ChartColumn, FileText, FolderOpen } from 'lucide-react'
 import { Navigate } from 'react-router-dom'
-import Encabezado from '@/components/Encabezado'
-import PantallaMensaje from '@/components/PantallaMensaje'
-import { useEstadisticas } from '@/hooks/expedientes'
-import { colorEstado, nombreEstado } from '@/lib/constantes'
+import { useEstadisticasDepartamento } from '@/hooks/estadisticas'
 import { RUTAS } from '@/lib/rutas'
 import { useSesion } from '@/lib/sesion'
 
+const PALETA = ['#2563eb', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#64748b']
+
 export default function Estadisticas() {
   const { usuario, permisos } = useSesion()
-  const { cargando, datos, error } = useEstadisticas()
+  const est = useEstadisticasDepartamento()
 
   if (!permisos.estadisticas) return <Navigate to={RUTAS.inicio} replace />
-  if (cargando) return <PantallaMensaje texto="Cargando…" />
-  if (error) return <PantallaMensaje texto={error} tono="error" />
 
-  const porEstado = Object.entries(datos?.porEstado ?? {}).sort((a, b) => b[1] - a[1])
-  const porMes = datos?.porMes ?? []
+  const causasPorMes = (est.causasPorMes ?? []).map((d) => ({ ...d, label: etiquetaMes(d.mes) }))
+  const documentosPorMes = (est.documentosPorMes ?? []).map((d) => ({ ...d, label: etiquetaMes(d.mes) }))
+  const porEstado = (est.causasPorEstado ?? []).map((d) => ({
+    ...d,
+    label: String(d.estado).replace(/_/g, ' '),
+  }))
+  const topFuncionarios = est.topFuncionarios ?? []
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
-      <Encabezado usuario={usuario} />
-
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 lg:py-10">
-        <div className="animate-aparecer">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <ChartColumn size={22} className="text-blue-600" />
-              </span>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Estadísticas</h1>
-                <p className="text-sm text-slate-500">Expedientes por estado</p>
-              </div>
-            </div>
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">Estados provisionales</span>
-          </div>
-
-          <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <TarjetaResumen etiqueta="Total de causas" valor={datos?.total ?? 0} destacada />
-            {porEstado.map(([estado, total]) => (
-              <TarjetaResumen key={estado} etiqueta={nombreEstado(estado)} valor={total} color={colorEstado(estado)} />
-            ))}
-          </section>
-
-          <section className="mt-8">
-            <h2 className="px-1 text-sm font-semibold uppercase tracking-wide text-slate-400">Por mes</h2>
-            {porMes.length === 0 ? (
-              <p className="mt-3 rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Aún no hay datos mensuales.</p>
-            ) : (
-              <div className="mt-3 space-y-3">
-                {porMes.map(({ mes, estados }) => (
-                  <BarraMes key={mes} mes={mes} estados={estados} />
-                ))}
-              </div>
-            )}
-          </section>
+    <main className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-10 lg:py-12">
+      <div className="flex items-center gap-3">
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+          <ChartColumn size={24} className="text-blue-600" />
+        </span>
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Estadísticas</h1>
+          <p className="text-sm text-slate-500">
+            Departamento{usuario?.departamentoNombre ? ` · ${usuario.departamentoNombre}` : ''}
+          </p>
         </div>
-      </main>
+      </div>
+      <section className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Total icono={FolderOpen} etiqueta="Total de causas" valor={est.totalCausas} />
+        <Total icono={FileText} etiqueta="Total de documentos" valor={est.totalDocumentos} />
+      </section>
+      <section className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Panel titulo="Causas por mes">
+          <Barras datos={causasPorMes} color="#2563eb" />
+        </Panel>
+
+        <Panel titulo="Documentos por mes">
+          <Barras datos={documentosPorMes} color="#f59e0b" />
+        </Panel>
+
+        <Panel titulo="Causas por estado">
+          <Dona datos={porEstado} />
+        </Panel>
+
+        <Panel titulo="Funcionarios más activos">
+          <BarrasH datos={topFuncionarios} />
+        </Panel>
+      </section>
+    </main>
+  )
+}
+
+function Total({ icono: Icono, etiqueta, valor }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-2 text-slate-400">
+        <Icono size={18} />
+        <span className="text-sm font-medium text-slate-500">{etiqueta}</span>
+      </div>
+      <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight text-slate-900">{valor ?? 0}</p>
     </div>
   )
 }
 
-function TarjetaResumen({ etiqueta, valor, color, destacada }) {
+function Panel({ titulo, children }) {
   return (
-    <div className={`rounded-2xl border p-4 shadow-sm ${destacada ? 'border-blue-200 bg-blue-50/60' : 'border-slate-200 bg-white'}`}>
-      <p className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
-        {color && <span className={`h-2 w-2 rounded-full ${color}`} />}
-        {etiqueta}
-      </p>
-      <p className="mt-1 text-3xl font-semibold tabular-nums tracking-tight text-slate-900">{valor}</p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-sm font-semibold text-slate-700">{titulo}</h2>
+      <div className="mt-4 h-56">{children}</div>
     </div>
   )
 }
 
-function BarraMes({ mes, estados }) {
-  const entradas = Object.entries(estados)
-  const total = entradas.reduce((suma, [, n]) => suma + n, 0)
-  const nombreMes = new Date(`${mes}-02`).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
-
+function SinDatos() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-medium capitalize text-slate-800">{nombreMes}</p>
-        <p className="text-xs tabular-nums text-slate-500">{total} causa{total === 1 ? '' : 's'}</p>
-      </div>
-
-      <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-slate-100">
-        {entradas.map(([estado, n]) => (
-          <span key={estado} className={colorEstado(estado)} style={{ width: `${(n / total) * 100}%` }} title={`${nombreEstado(estado)}: ${n}`} />
-        ))}
-      </div>
-
-      <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1">
-        {entradas.map(([estado, n]) => (
-          <span key={estado} className="flex items-center gap-1.5 text-xs text-slate-600">
-            <span className={`h-2 w-2 rounded-full ${colorEstado(estado)}`} />
-            {nombreEstado(estado)} · {n}
-          </span>
-        ))}
-      </div>
+    <div className="flex h-full items-center justify-center rounded-xl bg-slate-50 text-sm text-slate-400">
+      Sin datos aún
     </div>
   )
+}
+
+const ejeComun = {
+  tick: { fill: '#94a3b8', fontSize: 12 },
+  axisLine: false,
+  tickLine: false,
+}
+
+const tooltipEstilo = {
+  contentStyle: {
+    borderRadius: 12,
+    border: '1px solid #e2e8f0',
+    fontSize: 13,
+    boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
+  },
+}
+
+function Barras({ datos, color }) {
+  if (!datos || datos.length === 0) return <SinDatos />
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={datos} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+        <CartesianGrid vertical={false} stroke="#f1f5f9" />
+        <XAxis dataKey="label" {...ejeComun} />
+        <YAxis allowDecimals={false} {...ejeComun} />
+        <Tooltip cursor={{ fill: '#f8fafc' }} {...tooltipEstilo} />
+        <Bar dataKey="total" fill={color} radius={[6, 6, 0, 0]} maxBarSize={44} />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
+function BarrasH({ datos }) {
+  if (!datos || datos.length === 0) return <SinDatos />
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart layout="vertical" data={datos} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+        <CartesianGrid horizontal={false} stroke="#f1f5f9" />
+        <XAxis type="number" allowDecimals={false} {...ejeComun} />
+        <YAxis type="category" dataKey="nombre" width={110} {...ejeComun} />
+        <Tooltip cursor={{ fill: '#f8fafc' }} {...tooltipEstilo} />
+        <Bar dataKey="total" fill="#2563eb" radius={[0, 6, 6, 0]} maxBarSize={26} />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
+function Dona({ datos }) {
+  if (!datos || datos.length === 0) return <SinDatos />
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={datos}
+          dataKey="total"
+          nameKey="label"
+          cx="50%"
+          cy="50%"
+          innerRadius={52}
+          outerRadius={78}
+          paddingAngle={2}
+        >
+          {datos.map((_, i) => (
+            <Cell key={i} fill={PALETA[i % PALETA.length]} />
+          ))}
+        </Pie>
+        <Tooltip {...tooltipEstilo} />
+      </PieChart>
+    </ResponsiveContainer>
+  )
+}
+
+function etiquetaMes(mes) {
+  if (!mes) return ''
+  const d = new Date(`${mes}-02`)
+  if (isNaN(d.getTime())) return mes
+  return d.toLocaleDateString('es-CL', { month: 'short' })
 }

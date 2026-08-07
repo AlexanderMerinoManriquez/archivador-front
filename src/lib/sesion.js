@@ -10,7 +10,7 @@ export const ROL_LABEL = {
 const PERMISOS_FALLBACK = {
   admin: { digitalizar: true, estadisticas: true },
   encargado: { digitalizar: true, estadisticas: true },
-  funcionario: { digitalizar: true, estadisticas: false },
+  funcionario: { digitalizar: true, estadisticas: true },
   publico: { digitalizar: false, estadisticas: false },
 }
 
